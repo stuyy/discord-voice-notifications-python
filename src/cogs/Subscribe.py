@@ -6,7 +6,7 @@ class Subscribe(commands.Cog):
 
     @commands.group(aliases=['sub', 's'], invoke_without_command=True, case_insensitive=True)
     async def subscribe(self, ctx, *args):
-        valid_voice_channels =  self.parse_channels(ctx, args)
+        valid_voice_channels =  self.parse_channels(ctx,     args)
         print(valid_voice_channels)
         # Append to Database.
         self.bot.db.subscribe(valid_voice_channels, ctx)
@@ -18,7 +18,26 @@ class Subscribe(commands.Cog):
 
     @commands.command()
     async def subbed(self, ctx):
-        print('display subbed')
+        channels = self.bot.db.get_subbed_channels(ctx)
+        guild = ctx.guild
+        embed=discord.Embed()
+        embed.title='Subscribed Channels'
+        embed.set_author(name="{}#{}".format(ctx.author.name, ctx.author.discriminator), icon_url=ctx.author.avatar_url)
+        if channels is not None:
+            vc_list = []
+            for channel in channels:
+                print(channel)
+                res = discord.utils.get(ctx.guild.voice_channels, id=int(channel))
+                if res is not None:
+                    vc_list.append(res)
+
+            description = ''
+            for channel in vc_list:
+                embed.add_field(name='**{} Channel**'.format(channel.name), value=channel.id, inline=False)
+            
+            embed.description=description
+            embed.color=1733275
+            await ctx.channel.send(embed=embed)
 
     @subscribe.command(name='all')
     async def sub_all(self, ctx):
