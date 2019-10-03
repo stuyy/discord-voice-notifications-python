@@ -35,3 +35,16 @@ class Database:
                     member_doc.channels.pop(ids, None)
             
             member_doc.update(set__channels=member_doc.channels)
+
+    def get_subbed_channels(self, ctx):
+        member = ctx.author
+        member_id = member.id
+        member_doc = self.get_member_document(member_id)
+        return member_doc.channels if member_doc is not None else None
+
+    def get_member_document(self, id):
+        query = GuildMember.objects(user_id=str(id))
+        if len(query) == 0:
+            return None
+        else:
+            return query[0]
