@@ -10,11 +10,11 @@ class Subscribe(commands.Cog):
         print(valid_voice_channels)
         # Append to Database.
         self.bot.db.subscribe(valid_voice_channels, ctx)
-        
     
     @commands.group(aliases=['unsub'], invoke_without_command=True)
-    async def unsubscribe(self, ctx, args):
+    async def unsubscribe(self, ctx, *args):
         valid_voice_channels = self.parse_channels(ctx, args)
+        self.bot.db.unsubscribe(valid_voice_channels, ctx)
 
     @commands.command()
     async def subbed(self, ctx):
@@ -50,6 +50,7 @@ class Subscribe(commands.Cog):
                             pass
                         else:
                             valid_voice_channels[str(ch.id)] = str(guild.id)
+   
             return valid_voice_channels
 def setup(bot):
     bot.add_cog(Subscribe(bot))

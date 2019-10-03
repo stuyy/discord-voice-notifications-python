@@ -1,9 +1,11 @@
 from discord.ext import commands
 from SubscribeBot import SubscribeBot
+from database import Database
 import os
 
-client = SubscribeBot(command_prefix='?')
+db = Database()
 
+client = SubscribeBot(db, command_prefix='?', case_insensitive=True)
 exts = ['cogs.Subscribe', 'cogs.Whitelist']
 
 if __name__ == '__main__':
