@@ -6,38 +6,15 @@ class Subscribe(commands.Cog):
 
     @commands.group(aliases=['sub', 's'], invoke_without_command=True, case_insensitive=True)
     async def subscribe(self, ctx, *args):
-
-        guild = discord.utils.find(lambda g : g.id == int(ctx.guild.id), self.bot.guilds)
-
-        if guild is not None:
-            valid_voice_channels = {} # List of all IDs to subscribe user to.
-            for arg in args:
-                # Find by ID first, if not found, find by name.
-                try:
-                    ch = discord.utils.find(lambda c : c.id == int(arg), guild.voice_channels)
-                    if ch is not None:
-                        if str(ch.id) in valid_voice_channels:
-                            pass
-                        else:
-                            valid_voice_channels[ch.id] = ch
-
-                except Exception as error:
-                    print(error)
-                    ch = discord.utils.find(lambda c : c.name == arg, guild.voice_channels)
-                    if ch is not None:
-                        if str(ch.id) in valid_voice_channels:
-                            pass
-                        else:
-                            valid_voice_channels[str(ch.id)] = ch
-
-            
-        else:
-            print('Invalid.')
-
+        valid_voice_channels =  self.parse_channels(ctx, args)
+        print(valid_voice_channels)
+        # Append to Database.
+        self.bot.db.subscribe(valid_voice_channels, ctx)
+        
     
     @commands.group(aliases=['unsub'], invoke_without_command=True)
-    async def unsubscribe(self, ctx):
-        print('unsub')
+    async def unsubscribe(self, ctx, args):
+        valid_voice_channels = self.parse_channels(ctx, args)
 
     @commands.command()
     async def subbed(self, ctx):
@@ -51,5 +28,28 @@ class Subscribe(commands.Cog):
     async def unsub_all(self, ctx):
         print('unsub all')
 
+    def parse_channels(self, ctx, args):
+        guild = discord.utils.find(lambda g : g.id == int(ctx.guild.id), self.bot.guilds)
+
+        if guild is not None:
+            valid_voice_channels = {} # List of all IDs to subscribe user to.
+            for arg in args:
+                # Find by ID first, if not found, find by name.
+                try:
+                    ch = discord.utils.find(lambda c : c.id == int(arg), guild.voice_channels)
+                    if ch is not None:
+                        if str(ch.id) in valid_voice_channels: # If key is in dict, pass.
+                            pass
+                        else:
+                            valid_voice_channels[ch.id] = str(guild.id) # Add key-value pair to dict.
+
+                except Exception as error:
+                    ch = discord.utils.find(lambda c : c.name == arg, guild.voice_channels)
+                    if ch is not None:
+                        if str(ch.id) in valid_voice_channels:
+                            pass
+                        else:
+                            valid_voice_channels[str(ch.id)] = str(guild.id)
+            return valid_voice_channels
 def setup(bot):
     bot.add_cog(Subscribe(bot))
