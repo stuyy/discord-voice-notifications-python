@@ -1,5 +1,13 @@
-from SubscribeBot import SubscriberBot
+from discord.ext import commands
+from SubscribeBot import SubscribeBot
 import os
 
-client = SubscriberBot(command_prefix='-')
+client = SubscribeBot(command_prefix='?')
+
+exts = ['cogs.Subscribe']
+
+if __name__ == '__main__':
+    for ext in exts:
+        client.load_extension(ext)
+
 client.run(os.getenv("TOKEN"))
