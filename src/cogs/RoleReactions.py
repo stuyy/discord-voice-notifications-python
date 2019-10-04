@@ -17,25 +17,25 @@ class RoleReaction(commands.Cog):
                 return
             
             embed_list = generate_embeds(channels, reaction.message.guild, user)
-            current_embed = discord.utils.find(lambda e: e.title == 'Subscribed Channels - ({})'.format(user.id), reaction.message.embeds)
-            embed_user_id = re.search('\d+', current_embed.title)
-            user_id = embed_user_id.group(0)
-            
+            current_embed = discord.utils.find(lambda e: e.title == 'Subscribed Channels', reaction.message.embeds)
             result = re.search('\d+', current_embed.footer.text)
+
             curr_page = int(result.group(0))-1 if result is not None else None
             if str(reaction.emoji) == '◀':
                 prev_page = curr_page - 1
                 if curr_page < 1:
-                    print('no more')
+                    await reaction.message.remove_reaction('▶', user)
                 else:
                     await reaction.message.edit(embed=embed_list[prev_page])
+                    await reaction.message.remove_reaction('◀', user)
 
             elif str(reaction.emoji) == '▶':
                 next_page = curr_page + 1
                 if (next_page+1) > len(embed_list):
-                    print('no more')
+                    pass
                 else:
                     await reaction.message.edit(embed=embed_list[next_page])
+                    await reaction.message.remove_reaction('▶', user)
 
         
 
