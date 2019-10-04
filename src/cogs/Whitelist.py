@@ -62,11 +62,11 @@ class Whitelist(commands.Cog):
         for arg in args:
             try:
                 id = re.search("\d+", arg).group(0)
-                if int(id) == ctx.author.id:
-                    raise Exception("Cannot whitelist yourself")
-                else:
-                    member = discord.utils.find(lambda m : m.id == int(id), ctx.guild.members)
-                    if member is not None:
+                member = discord.utils.find(lambda m : m.id == int(id), ctx.guild.members)
+                if member is not None:
+                    if member.id == ctx.author.id or member.bot:
+                        raise Exception("Cannot whitelist yourself/bot")
+                    else:
                         user_whitelist[channel_id].append(member.id)
             except Exception as error:
                 print(error)
