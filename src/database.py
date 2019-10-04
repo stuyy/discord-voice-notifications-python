@@ -1,5 +1,5 @@
 from mongoengine import connect
-from models.MemberCollections import GuildMember
+from models.MemberCollections import *
 
 class Database:
     def __init__(self, name='subscriberbot'):
@@ -7,6 +7,7 @@ class Database:
 
     def connect_db(self, name):
         connect(name)
+        
     def subscribe(self, channels, ctx):
         member = ctx.author
         query = GuildMember.objects(user_id=str(member.id))
@@ -46,9 +47,37 @@ class Database:
         member = ctx.author
         member_doc = self.get_member_document(member.id)
         if member_doc is not None:
-            return member_doc.whitelist
+            # return member_doc.whitelist
+            whitelist_doc = self.get_whitelist_document({
+                'guild_id' : str(ctx.guild.id),
+                'user_id' : str(ctx.author.id)
+            })
+            print(whitelist_doc)
         else:
             return None
+
+    def whitelist_add(self, ctx, channel_id, whitelist):
+        # Check if Member exists in DB.
+        member_doc = self.get_member_document(ctx.author.id)
+        print(member_doc)
+        if member_doc is not None:
+            # Find whitelist document for user.
+            key = {
+                'guild_id' : str(ctx.guild.id),
+                'user_id' : str(ctx.author.id)
+            }
+            whitelist_doc = self.get_whitelist_document(key)
+            if whitelist_doc is not None:
+                # Update whitelist document.
+                print(whitelist_doc.whitelist)
+            else:
+                GuildMemberWhitelist(key, whitelist, True).save()
+            
+        else:
+            # If member doesn't exist, create and save.
+            GuildMember(str(ctx.author.id), ctx.author.name, {
+                'channels' : [str(channel_id)]
+            }).save()
 
     def get_member_document(self, id):
         query = GuildMember.objects(user_id=str(id))
@@ -57,5 +86,11 @@ class Database:
         else:
             return query[0]
 
-    def whitelist_add(self, ctx):
-        pass
+    def get_whitelist_document(self, key):
+        print(key)
+        query = GuildMemberWhitelist.objects(whitelist_id=key)
+        if len(query) == 0:
+            return None
+        else:
+            return query[0]
+            
