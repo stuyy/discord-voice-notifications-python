@@ -41,11 +41,9 @@ class Database:
         else:
             return None
 
-    def get_subbed_channels(self, ctx):
-        member = ctx.author
-        member_id = member.id
-        member_doc = self.get_member_document(member_id)
-        return member_doc.channels[str(ctx.guild.id)] if member_doc is not None and str(ctx.guild.id) in member_doc.channels else None
+    def get_subbed_channels(self, member, guild):
+        member_doc = self.get_member_document(member.id)
+        return member_doc.channels[str(guild.id)] if member_doc is not None and str(guild.id) in member_doc.channels else None
 
     def get_user_whitelist(self, ctx):
         member = ctx.author
