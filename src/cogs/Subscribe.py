@@ -28,16 +28,18 @@ class Subscribe(commands.Cog):
     @commands.command(aliases=['subbed'])
     async def subscribed(self, ctx):
         guild = ctx.guild
-        channels = self.bot.db.get_subbed_channels(ctx)
-        embeds = generate_embeds(channels, ctx)
+        channels = self.bot.db.get_subbed_channels(ctx.author, ctx.guild)
+        if channels is None:
+            return
+        embeds = generate_embeds(channels, guild, ctx.author)
 
-        msg = await ctx.channel.send(embed=embeds[0])
-
-        def check(reaction, user):
-            print(user == msg.author and str(reaction.emoji) == '▶')
-            return user == ctx.author and str(reaction.emoji) == '▶'
-
-        await msg.add_reaction('▶')
+        if len(embeds) != 0:
+            msg = await ctx.channel.send(embed=embeds[0])
+            await msg.add_reaction('◀')
+            await msg.add_reaction('▶')
+        else:
+            print('no embeds')
+        
         '''
         if channels is not None:
             vc_list = []
