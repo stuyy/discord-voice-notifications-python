@@ -35,7 +35,7 @@ class Database:
                 diff = list(set(member_doc.channels[str(guild.id)]).difference(set(channels[str(guild.id)])))
                 member_doc.channels[str(guild.id)] = diff
                 member_doc.update(set__channels=member_doc.channels)
-                
+                return True
             else:
                 return None
         else:
@@ -45,7 +45,7 @@ class Database:
         member = ctx.author
         member_id = member.id
         member_doc = self.get_member_document(member_id)
-        return member_doc.channels if member_doc is not None else None
+        return member_doc.channels[str(ctx.guild.id)] if member_doc is not None and str(ctx.guild.id) in member_doc.channels else None
 
     def get_user_whitelist(self, ctx):
         member = ctx.author
