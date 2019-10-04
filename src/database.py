@@ -65,11 +65,16 @@ class Database:
         }
         if member_doc is not None:
             # Find whitelist document for user.
-            
             whitelist_doc = self.get_whitelist_document(key)
             if whitelist_doc is not None:
                 # Update whitelist document.
                 print(whitelist_doc.whitelist)
+                # Update whitelist. Check if user has whitelist for channel.
+                if str(channel_id) in whitelist_doc.whitelist:
+                    print('yes')
+                else:
+                    whitelist_doc.whitelist.update(whitelist)
+                    whitelist_doc.update(set__whitelist=whitelist_doc.whitelist)
             else:
                 GuildMemberWhitelist(key, whitelist, True).save()
             
@@ -88,7 +93,6 @@ class Database:
             return query[0]
 
     def get_whitelist_document(self, key):
-        print(key)
         query = GuildMemberWhitelist.objects(whitelist_id=key)
         if len(query) == 0:
             return None
