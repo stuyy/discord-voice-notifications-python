@@ -26,7 +26,7 @@ class Whitelist(commands.Cog):
                 embed.add_field(name=vc.name, value=field, inline=False)
 
         await ctx.channel.send(embed=embed)
-        
+    
     @whitelist.command(name='add', aliases=['a'])
     async def whitelist_add(self, ctx, channel, *args):
         # self.db.add_wl(ctx)

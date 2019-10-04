@@ -13,3 +13,6 @@ mongoengine = "*"
 
 [requires]
 python_version = "3.6"
+
+[scripts]
+dev = "nodemon --exec python src/run.py"
