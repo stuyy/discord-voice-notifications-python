@@ -21,16 +21,21 @@ class Whitelist(commands.Cog):
         try:
             voice_channel = discord.utils.find(lambda c: c.id == int(channel), ctx.guild.voice_channels)
             if voice_channel is not None:
-                self.parse_users(ctx, voice_channel, args)
+                whitelist = self.parse_users(ctx, voice_channel, args)
+                if whitelist is not None:
+                    self.bot.db.whitelist_add(ctx, voice_channel.id, whitelist)
             else:
                 print('no voice channel found')
+
         except Exception as error:
             voice_channel = discord.utils.find(lambda c : c.name == channel, ctx.guild.voice_channels)
             if voice_channel is not None:
-                self.parse_users(ctx, voice_channel, args)
+                whitelist = self.parse_users(ctx, voice_channel, args)
+                if whitelist is not None:
+                    self.bot.db.whitelist_add(ctx, voice_channel.id, whitelist)
             else:
                 print('no voice channel foundd')
-        
+
 
     @whitelist.command(name='remove', aliases=['r', 'rm'])
     async def whitelist_remove(self, ctx):
@@ -57,14 +62,16 @@ class Whitelist(commands.Cog):
         for arg in args:
             try:
                 id = re.search("\d+", arg).group(0)
-                member = discord.utils.find(lambda m : m.id == int(id), ctx.guild.members)
-                if member is not None:
-                    user_whitelist[channel_id].append(member.id)
+                if int(id) == ctx.author.id:
+                    raise Exception("Cannot whitelist yourself")
                 else:
-                    pass
+                    member = discord.utils.find(lambda m : m.id == int(id), ctx.guild.members)
+                    if member is not None:
+                        user_whitelist[channel_id].append(member.id)
             except Exception as error:
-                pass
-        return user_whitelist
+                print(error)
+        
+        return user_whitelist if len(user_whitelist[channel_id]) != 0 else None
 
 def setup(bot):
     bot.add_cog(Whitelist(bot))
