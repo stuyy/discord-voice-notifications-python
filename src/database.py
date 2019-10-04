@@ -12,13 +12,18 @@ class Database:
         member = ctx.author
         query = GuildMember.objects(user_id=str(member.id))
         if len(query) == 0:
-            member_doc = GuildMember(str(member.id), str(member.name), {}, channels)
+            member_doc = GuildMember(str(member.id), str(member.name), channels)
             member_doc.save()
         else:
             member_doc = query[0]
-            member_doc.channels.update(channels)
-            member_doc.update(set__channels=member_doc.channels)
-
+            # Check if key exists in member_doc.channels
+            if str(ctx.guild.id) in member_doc.channels:
+                member_doc.channels[str(ctx.guild.id)] = list(set(channels[str(ctx.guild.id)]).union(set(member_doc.channels[str(ctx.guild.id)])))
+                member_doc.update(set__channels=member_doc.channels)
+            else:
+                member_doc.channels.update(channels)
+                member_doc.update(set__channels=member_doc.channels)
+        
     def unsubscribe(self, channels, ctx):
         member = ctx.author
         # Get the member document first.
@@ -52,7 +57,7 @@ class Database:
                 'guild_id' : str(ctx.guild.id),
                 'user_id' : str(ctx.author.id)
             })
-            print(whitelist_doc)
+            return whitelist_doc.whitelist if whitelist_doc is not None else None
         else:
             return None
 
@@ -78,7 +83,6 @@ class Database:
                     whitelist_doc.update(set__whitelist=whitelist_doc.whitelist)
             else:
                 GuildMemberWhitelist(key, whitelist, True).save()
-            
         else:
             # If member doesn't exist, create and save.
             GuildMember(str(ctx.author.id), ctx.author.name, {
@@ -92,7 +96,6 @@ class Database:
             return None
         else:
             return query[0]
-
     def get_whitelist_document(self, key):
         query = GuildMemberWhitelist.objects(whitelist_id=key)
         if len(query) == 0:
