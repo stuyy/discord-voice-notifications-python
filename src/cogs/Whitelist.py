@@ -49,17 +49,22 @@ class Whitelist(commands.Cog):
         print("Disabling whitelist.")
 
     def parse_users(self, ctx, channel, args):
-        print(channel)
         mentioned_users = ctx.message.mentions
+        channel_id = str(channel.id)
         user_whitelist = {
-            
+            channel_id : []
         }
         for arg in args:
             try:
-                print(re.search("\d+", arg).group(0))
+                id = re.search("\d+", arg).group(0)
+                member = discord.utils.find(lambda m : m.id == int(id), ctx.guild.members)
+                if member is not None:
+                    user_whitelist[channel_id].append(member.id)
+                else:
+                    pass
             except Exception as error:
-                print(error)
-                
+                pass
+        return user_whitelist
 
 def setup(bot):
     bot.add_cog(Whitelist(bot))
