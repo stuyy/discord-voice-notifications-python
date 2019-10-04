@@ -54,7 +54,6 @@ class Whitelist(commands.Cog):
         print("Disabling whitelist.")
 
     def parse_users(self, ctx, channel, args):
-        mentioned_users = ctx.message.mentions
         channel_id = str(channel.id)
         user_whitelist = {
             channel_id : []
@@ -66,11 +65,13 @@ class Whitelist(commands.Cog):
                 if member is not None:
                     if member.id == ctx.author.id or member.bot:
                         raise Exception("Cannot whitelist yourself/bot")
+                    elif str(member.id) in user_whitelist[channel_id]:
+                        print("Skipping.")
                     else:
-                        user_whitelist[channel_id].append(member.id)
+                        user_whitelist[channel_id].append(str(member.id))
             except Exception as error:
                 print(error)
-        
+        print(user_whitelist)
         return user_whitelist if len(user_whitelist[channel_id]) != 0 else None
 
 def setup(bot):
