@@ -42,9 +42,20 @@ class Database:
         member_doc = self.get_member_document(member_id)
         return member_doc.channels if member_doc is not None else None
 
+    def get_user_whitelist(self, ctx):
+        member = ctx.author
+        member_doc = self.get_member_document(member.id)
+        if member_doc is not None:
+            return member_doc.whitelist
+        else:
+            return None
+
     def get_member_document(self, id):
         query = GuildMember.objects(user_id=str(id))
         if len(query) == 0:
             return None
         else:
             return query[0]
+
+    def whitelist_add(self, ctx):
+        pass
