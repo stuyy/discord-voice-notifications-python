@@ -26,21 +26,20 @@ class Database:
         
     def unsubscribe(self, channels, ctx):
         member = ctx.author
+        guild = ctx.guild
         # Get the member document first.
-        query = GuildMember.objects(user_id=str(member.id))
-        if len(query) == 0:
-            pass
+        member_doc = self.get_member_document(member.id)
+        if member_doc is not None:
+            member_doc.channels
+            if str(guild.id) in member_doc.channels:
+                diff = list(set(member_doc.channels[str(guild.id)]).difference(set(channels[str(guild.id)])))
+                member_doc.channels[str(guild.id)] = diff
+                member_doc.update(set__channels=member_doc.channels)
+                
+            else:
+                return None
         else:
-            member_doc = query[0]
-            subscribed = member_doc.channels
-            print(subscribed)
-            channel_ids = channels.keys()
-            for ids in channel_ids:
-                if ids in channel_ids:
-                    print('yes')
-                    member_doc.channels.pop(ids, None)
-            
-            member_doc.update(set__channels=member_doc.channels)
+            return None
 
     def get_subbed_channels(self, ctx):
         member = ctx.author
