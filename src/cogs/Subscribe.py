@@ -8,39 +8,49 @@ class Subscribe(commands.Cog):
 
     @commands.group(aliases=['sub', 's'], invoke_without_command=True, case_insensitive=True)
     async def subscribe(self, ctx, *args):
-        valid_voice_channels =  parse_channels(ctx, args)
-        print(valid_voice_channels)
+        valid_voice_channels = parse_channels(ctx, args)
         # Append to Database.
         self.bot.db.subscribe(valid_voice_channels, ctx)
     
     @commands.group(aliases=['unsub'], invoke_without_command=True)
     async def unsubscribe(self, ctx, *args):
         valid_voice_channels = parse_channels(ctx, args)
-        self.bot.db.unsubscribe(valid_voice_channels, ctx)
-
-    @commands.command()
-    async def subbed(self, ctx):
-        channels = self.bot.db.get_subbed_channels(ctx)
         guild = ctx.guild
-        embed=discord.Embed()
-        embed.title='Subscribed Channels'
-        embed.set_author(name="{}#{}".format(ctx.author.name, ctx.author.discriminator), icon_url=ctx.author.avatar_url)
+        embed = discord.Embed()
+        if len(valid_voice_channels[str(guild.id)]) == 0:
+            pass
+        else:
+            result = self.bot.db.unsubscribe(valid_voice_channels, ctx)
+            if result:
+                print('Success!')
+            else:
+                print("nope")
+    @commands.command(aliases=['subbed'])
+    async def subscribed(self, ctx):
+        guild = ctx.guild
+        channels = self.bot.db.get_subbed_channels(ctx)
+        embeds = generate_embeds(channels, ctx)
+
+        msg = await ctx.channel.send(embed=embeds[0])
+
+        def check(reaction, user):
+            print(user == msg.author and str(reaction.emoji) == '▶')
+            return user == ctx.author and str(reaction.emoji) == '▶'
+
+        await msg.add_reaction('▶')
+        '''
         if channels is not None:
             vc_list = []
             for channel in channels:
-                print(channel)
                 res = discord.utils.get(ctx.guild.voice_channels, id=int(channel))
                 if res is not None:
                     vc_list.append(res)
 
-            description = ''
             for channel in vc_list:
-                embed.add_field(name='**{} Channel**'.format(channel.name), value=channel.id, inline=False)
+                embed.add_field(name='**{}**'.format(channel.name), value=channel.id, inline=False)
             
-            embed.description=description
-            embed.color=1733275
             await ctx.channel.send(embed=embed)
-    
+        '''
     @subscribe.command(name='all')
     async def sub_all(self, ctx):
         print('sub all')
