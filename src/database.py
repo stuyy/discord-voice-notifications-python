@@ -68,10 +68,11 @@ class Database:
             whitelist_doc = self.get_whitelist_document(key)
             if whitelist_doc is not None:
                 # Update whitelist document.
-                print(whitelist_doc.whitelist)
                 # Update whitelist. Check if user has whitelist for channel.
                 if str(channel_id) in whitelist_doc.whitelist:
-                    print('yes')
+                    current_wl = whitelist_doc.whitelist[str(channel_id)]
+                    whitelist_doc.whitelist[str(channel_id)] = list(set(current_wl).union(set(whitelist[str(channel_id)])))
+                    whitelist_doc.update(set__whitelist=whitelist_doc.whitelist)
                 else:
                     whitelist_doc.whitelist.update(whitelist)
                     whitelist_doc.update(set__whitelist=whitelist_doc.whitelist)
