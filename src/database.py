@@ -59,13 +59,13 @@ class Database:
     def whitelist_add(self, ctx, channel_id, whitelist):
         # Check if Member exists in DB.
         member_doc = self.get_member_document(ctx.author.id)
-        print(member_doc)
+        key = {
+            'guild_id' : str(ctx.guild.id),
+            'user_id' : str(ctx.author.id)
+        }
         if member_doc is not None:
             # Find whitelist document for user.
-            key = {
-                'guild_id' : str(ctx.guild.id),
-                'user_id' : str(ctx.author.id)
-            }
+            
             whitelist_doc = self.get_whitelist_document(key)
             if whitelist_doc is not None:
                 # Update whitelist document.
@@ -78,6 +78,7 @@ class Database:
             GuildMember(str(ctx.author.id), ctx.author.name, {
                 'channels' : [str(channel_id)]
             }).save()
+            GuildMemberWhitelist(key, whitelist, True).save()
 
     def get_member_document(self, id):
         query = GuildMember.objects(user_id=str(id))
