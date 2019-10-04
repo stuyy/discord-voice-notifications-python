@@ -8,12 +8,24 @@ class Whitelist(commands.Cog):
 
     @commands.group(aliases=['wl'], invoke_without_command=True)
     async def whitelist(self, ctx):
+        embed = discord.Embed()
+        embed.set_author(name="{}#{}'s Whitelist".format(ctx.author.name, ctx.author.discriminator), icon_url=ctx.author.avatar_url)
+        embed.set_thumbnail(url=ctx.guild.icon_url)
+        embed.set_footer(text='To whitelist someone, first subscribe to a channel, and then issue the command: e.g: ?wl add 582319490604335107 @UserToWhitelist#1337')
+        embed.description = ''
         whitelist = self.bot.db.get_user_whitelist(ctx)
-        print(whitelist)
-        if bool(whitelist):
-            print(whitelist)
-        else:
-            print('empty')
+        for wl in whitelist:
+            vc = discord.utils.find(lambda c: c.id == int(wl), ctx.guild.voice_channels)
+            if vc is not None:
+                print(vc.name)
+                field = ''
+                for member_id in whitelist[wl]:
+                    member = discord.utils.find(lambda m : m.id == int(member_id), ctx.guild.members)
+                    if member is not None:
+                        field += '{} ({})\n'.format(member.name, member.id)
+                embed.add_field(name=vc.name, value=field, inline=False)
+
+        await ctx.channel.send(embed=embed)
         
     @whitelist.command(name='add', aliases=['a'])
     async def whitelist_add(self, ctx, channel, *args):
@@ -63,7 +75,7 @@ class Whitelist(commands.Cog):
                 id = re.search("\d+", arg).group(0)
                 member = discord.utils.find(lambda m : m.id == int(id), ctx.guild.members)
                 if member is not None:
-                    if member.id == ctx.author.id or member.bot:
+                    if member.id == ctx.author.id:
                         raise Exception("Cannot whitelist yourself/bot")
                     elif str(member.id) in user_whitelist[channel_id]:
                         print("Skipping.")
@@ -71,7 +83,6 @@ class Whitelist(commands.Cog):
                         user_whitelist[channel_id].append(str(member.id))
             except Exception as error:
                 print(error)
-        print(user_whitelist)
         return user_whitelist if len(user_whitelist[channel_id]) != 0 else None
 
 def setup(bot):
