@@ -19,8 +19,7 @@ class GuildMemberWhitelist(Document):
     whitelist_enabled = BooleanField(default=True)
 
 class VoiceChannel(Document):
-    voice_channel_id = StringField(primary_key=True, required=True)
-    voice_channel_name = StringField(required=True)
+    id = DictField(primary_key=True, required=True)
     subscribed_users = DictField(required=False)
     limited = BooleanField(required=False, default=False) # If true, subscribable_users must be checked.
     subscribable_users = ListField(required=False)

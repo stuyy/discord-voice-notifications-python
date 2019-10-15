@@ -10,7 +10,7 @@ class Database:
         
     def subscribe(self, channels, ctx):
         for id in channels[str(ctx.guild.id)]:
-            vc_doc = self.get_vc_document(id)
+            vc_doc = self.get_vc_document(id, str(ctx.guild.id))
             user_id = str(ctx.author.id)
             user = {
                 user_id : {
@@ -19,7 +19,7 @@ class Database:
                 }
             }
             if vc_doc is None:
-                VoiceChannel(id=id, subscribed_users=user, limited=False, subscribable_users=[]).save()
+                VoiceChannel(id={ "vc_id": id, "guild_id" : str(ctx.guild.id)}, subscribed_users=user, limited=False, subscribable_users=[]).save()
             else:
                 subbed = vc_doc.subscribed_users
                 if str(ctx.author.id) not in subbed:
@@ -77,9 +77,12 @@ class Database:
             return None'''
 
     def get_subbed_channels(self, member, guild):
+        pass
+
+        '''
         member_doc = self.get_member_document(member.id)
         return member_doc.channels[str(guild.id)] if member_doc is not None and str(guild.id) in member_doc.channels else None
-
+        '''
     def get_user_whitelist(self, ctx):
         member = ctx.author
         member_doc = self.get_member_document(member.id)
@@ -135,7 +138,7 @@ class Database:
         else:
             return query[0]
 
-    def get_vc_document(self, id):
-        query = VoiceChannel.objects(id=id)
+    def get_vc_document(self, id, guild_id):
+        query = VoiceChannel.objects(id={ "vc_id" : id, "guild_id" : guild_id})
         return query[0] if len(query) != 0 else None
             
