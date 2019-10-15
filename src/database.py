@@ -84,6 +84,8 @@ class Database:
         to any channels yet. It's important to remember when a user subscribes to a channel, they automatically get a Whitelist
         Document created for them. 
     
+    Base Case: Check if user is actually subscribed to the channel, if they are not, return false.
+
     Loop through all user IDs the author is whitelisting. For each user to be whitelisted, check if they have a Whitelist Document in the Database.
 
     If whitelist document exists, then we need to add the author's ID to the 'user to be whitelisted's "whitelisters" list property.
@@ -94,6 +96,11 @@ class Database:
     We then need to update the author's whitelist, adding the ID of the user to be whitelisted to the author's whitelist list property.
     '''
     def whitelist_add(self, ctx, channel_id, whitelist):
+
+        is_subbed = self.is_subscribed(str(ctx.author.id), str(channel_id), str(ctx.guild.id))
+        if is_subbed == False:
+            return False
+        
         vc_doc = self.get_vc_document(str(channel_id), str(ctx.guild.id))
         # Get the author's whitelist.
         wl_doc = self.get_vc_whitelist_document(channel_id, ctx.guild.id, ctx.author.id)
@@ -123,8 +130,19 @@ class Database:
                 print("done.")
             
         else:
-            print("no doesnt exist")
-
+            return False
+            
+    def is_subscribed(self, user_id, voice_id, guild_id):
+        vc_doc = self.get_vc_document(voice_id, guild_id)
+        if vc_doc is not None:
+            if user_id in vc_doc.subscribed_users:
+                print("Yes, subscribed.")
+                return True
+            else:
+                print("No, not subscribed.")
+                return False
+        else: # VoiceChannel document doesn't exist. Means no one has subscribed to it.
+            return False
     def get_all_subbed_users(self, voice_id, guild_id, user_id):
         vc_document = self.get_vc_document(voice_id, guild_id)
         wl_document = self.get_vc_whitelist_document(voice_id, guild_id, user_id)
