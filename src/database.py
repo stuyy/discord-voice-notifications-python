@@ -37,22 +37,7 @@ class Database:
                 print("Saved.")
             else:
                 print("Do nothing. We're not updating their whitelist.")
-        '''
-        member = ctx.author
-        query = GuildMember.objects(user_id=str(member.id))
-        if len(query) == 0:
-            member_doc = GuildMember(str(member.id), str(member.name), channels)
-            member_doc.save()
-        else:
-            member_doc = query[0]
-            # Check if key exists in member_doc.channels
-            if str(ctx.guild.id) in member_doc.channels:
-                member_doc.channels[str(ctx.guild.id)] = list(set(channels[str(ctx.guild.id)]).union(set(member_doc.channels[str(ctx.guild.id)])))
-                member_doc.update(set__channels=member_doc.channels)
-            else:
-                member_doc.channels.update(channels)
-                member_doc.update(set__channels=member_doc.channels)
-        '''
+        
     def unsubscribe(self, channels, ctx):
         for id in channels[str(ctx.guild.id)]:
             vc_doc = self.get_vc_document(id, str(ctx.guild.id))
@@ -64,22 +49,6 @@ class Database:
                 popped = subbed.pop(str(ctx.author.id), None)
                 if popped is not None:
                     vc_doc.update(set__subscribed_users=subbed)
-            
-        '''member = ctx.author
-        guild = ctx.guild
-        # Get the member document first.
-        member_doc = self.get_member_document(member.id)
-        if member_doc is not None:
-            member_doc.channels
-            if str(guild.id) in member_doc.channels:
-                diff = list(set(member_doc.channels[str(guild.id)]).difference(set(channels[str(guild.id)])))
-                member_doc.channels[str(guild.id)] = diff
-                member_doc.update(set__channels=member_doc.channels)
-                return True
-            else:
-                return None
-        else:
-            return None'''
 
     '''
         This function must return a list of all the voice channel ids the user is subscribed to.
@@ -93,10 +62,7 @@ class Database:
                 subbed_channels.append(q.id['vc_id'])
 
         return subbed_channels
-        '''
-        member_doc = self.get_member_document(member.id)
-        return member_doc.channels[str(guild.id)] if member_doc is not None and str(guild.id) in member_doc.channels else None
-        '''
+
     def get_user_whitelist(self, ctx):
         member = ctx.author
         member_doc = self.get_member_document(member.id)
@@ -110,8 +76,26 @@ class Database:
         else:
             return None
 
+
+    '''
+    Get the VoiceChannel document and VoiceChannelWhitelist Document.
+    If both of them exist, continue. If they both are None, then it could mean two things:
+        - The VoiceChannel document returns None if it is not in the DB, which means no one has subscribed to the 
+        Channel yet.
+        - The VoiceChannel document is not None, but the Whitelist document is None. This means the user has not subscribed
+        to any channels yet. It's important to remember when a user subscribes to a channel, they automatically get a Whitelist
+        Document created for them. 
+    
+    Loop through all user IDs the author is whitelisting. For each user to be whitelisted, check if they have a Whitelist Document in the Database.
+
+    If whitelist document exists, then we need to add the author's ID to the 'user to be whitelisted's "whitelisters" list property.
+
+    If whitelist document does not exist, this means the user has not subscribed to that channel, so create a document for them
+    and set their whitelisters list propert to the author's ID.
+
+    We then need to update the author's whitelist, adding the ID of the user to be whitelisted to the author's whitelist list property.
+    '''
     def whitelist_add(self, ctx, channel_id, whitelist):
-        # Check if Member exists in DB.
         vc_doc = self.get_vc_document(str(channel_id), str(ctx.guild.id))
         # Get the author's whitelist.
         wl_doc = self.get_vc_whitelist_document(channel_id, ctx.guild.id, ctx.author.id)
@@ -142,34 +126,17 @@ class Database:
             
         else:
             print("no doesnt exist")
-        '''
-        member_doc = self.get_member_document(ctx.author.id)
-        key = {
-            'guild_id' : str(ctx.guild.id),
-            'user_id' : str(ctx.author.id)
-        }
-        if member_doc is not None:
-            # Find whitelist document for user.
-            whitelist_doc = self.get_whitelist_document(key)
-            if whitelist_doc is not None:
-                # Update whitelist document.
-                # Update whitelist. Check if user has whitelist for channel.
-                if str(channel_id) in whitelist_doc.whitelist:
-                    current_wl = whitelist_doc.whitelist[str(channel_id)]
-                    whitelist_doc.whitelist[str(channel_id)] = list(set(current_wl).union(set(whitelist[str(channel_id)])))
-                    whitelist_doc.update(set__whitelist=whitelist_doc.whitelist)
-                else:
-                    whitelist_doc.whitelist.update(whitelist)
-                    whitelist_doc.update(set__whitelist=whitelist_doc.whitelist)
-            else:
-                GuildMemberWhitelist(key, whitelist, True).save()
+
+    def get_all_subbed_users(self, voice_id, guild_id, user_id):
+        vc_document = self.get_vc_document(voice_id, guild_id)
+        wl_document = self.get_vc_whitelist_document(voice_id, guild_id, user_id)
+        if vc_document is not None and wl_document is not None:
+            return wl_document.whitelisters
         else:
-            # If member doesn't exist, create and save.
-            GuildMember(str(ctx.author.id), ctx.author.name, {
-                'channels' : [str(channel_id)]
-            }).save()
-            GuildMemberWhitelist(key, whitelist, True).save()
-        '''
+            pass
+    '''
+        Utility Functions
+    '''
     def get_member_document(self, id):
         query = GuildMember.objects(user_id=str(id))
         if len(query) == 0:
@@ -195,10 +162,4 @@ class Database:
         })
         return query[0] if len(query) != 0 else None
             
-    def get_all_subbed_users(self, voice_id, guild_id, user_id):
-        vc_document = self.get_vc_document(voice_id, guild_id)
-        wl_document = self.get_vc_whitelist_document(voice_id, guild_id, user_id)
-        if vc_document is not None and wl_document is not None:
-            return wl_document.whitelisters
-        else:
-            pass
+    
