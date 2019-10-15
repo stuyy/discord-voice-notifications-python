@@ -49,6 +49,7 @@ class Database:
                 popped = subbed.pop(str(ctx.author.id), None)
                 if popped is not None:
                     vc_doc.update(set__subscribed_users=subbed)
+                    
 
     '''
         This function must return a list of all the voice channel ids the user is subscribed to.
@@ -64,18 +65,15 @@ class Database:
         return subbed_channels
 
     def get_user_whitelist(self, ctx):
-        member = ctx.author
-        member_doc = self.get_member_document(member.id)
-        if member_doc is not None:
-            # return member_doc.whitelist
-            whitelist_doc = self.get_whitelist_document({
-                'guild_id' : str(ctx.guild.id),
-                'user_id' : str(ctx.author.id)
-            })
-            return whitelist_doc.whitelist if whitelist_doc is not None else None
-        else:
-            return None
+        user_id = str(ctx.author.id)
+        wl_doc = VoiceChannelWhitelist.objects(id__guild_id=str(ctx.guild.id), id__user_id=user_id)
+        return wl_doc
 
+    def get_whitelisters(self, ctx):
+        user_id = str(ctx.author.id)
+        wl_doc = VoiceChannelWhitelist.objects(id__guild_id=str(ctx.guild.id), id__user_id=user_id)
+        for x in wl_doc:
+            print(x.whitelisters)
 
     '''
     Get the VoiceChannel document and VoiceChannelWhitelist Document.
