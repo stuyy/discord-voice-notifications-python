@@ -9,10 +9,17 @@ class VoiceEvents(commands.Cog):
         
         if before.channel is None and after.channel is not None:
             print(member.name + " just joined a channel!")
+            # Get all users subscribed to the channel.
+            # For each user subscribed to channel, first check if their whitelist is enabled.
+            # If enabled, check if user who joined is in it. If not, don't DM user.
+            # If user is whitelisted, send DM.
+            # Set a flag called is_notified to indicate user was notified, prevent spam.
+            whitelisters = self.bot.db.get_all_subbed_users(str(after.channel.id), str(member.guild.id), str(member.id))
+            print(whitelisters)
         elif before.channel is not None and after.channel is not None:
             print("{} switched from {} to {}".format(member.name, before.channel.name, after.channel.name))
         elif before.channel is not None and after.channel is None:
             print("{} left {}".format(member.name, before.channel.name))
-        
+
 def setup(bot):
     bot.add_cog(VoiceEvents(bot))

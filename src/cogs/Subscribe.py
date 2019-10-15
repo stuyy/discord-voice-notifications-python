@@ -8,7 +8,7 @@ class Subscribe(commands.Cog):
 
     @commands.group(aliases=['sub', 's'], invoke_without_command=True, case_insensitive=True)
     async def subscribe(self, ctx, *args):
-        valid_voice_channels = parse_channels(ctx, args)
+        valid_voice_channels = parse_channels(ctx, args) # This is a Dictionary of the Guild ID mapping to all VC Channels to Subscribe to.
         # Append to Database.
         self.bot.db.subscribe(valid_voice_channels, ctx)
     

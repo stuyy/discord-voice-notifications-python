@@ -8,7 +8,7 @@ import os
 db = Database()
 
 client = SubscribeBot(db, command_prefix='?', case_insensitive=True)
-exts = ['cogs.Subscribe', 'cogs.Whitelist', 'cogs.RoleReactions']
+exts = ['cogs.Subscribe', 'cogs.Whitelist', 'cogs.RoleReactions', 'cogs.VoiceEvents']
 
 if __name__ == '__main__':
     for ext in exts:
