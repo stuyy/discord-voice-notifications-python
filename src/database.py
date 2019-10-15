@@ -121,7 +121,6 @@ class Database:
                 user_wl_doc = self.get_vc_whitelist_document(channel_id, ctx.guild.id, user_id)
                 if user_wl_doc is not None:
                     whitelisters = user_wl_doc.whitelisters
-                    print(whitelisters)
                     if user_id not in whitelisters:
                         whitelisters.append(str(ctx.author.id))
                         user_wl_doc.update(set__whitelisters=whitelisters)
@@ -129,13 +128,15 @@ class Database:
                         print("is in")
                 else:
                     # If none, create and add.
-                    VoiceChannelWhitelist(id={ "vc_id" : str(channel_id), "guild_id" : str(ctx.guild.id), "user_id" : user_id}, whitelisters=[str(ctx.author.id)], enabled=True, whitelist=[]).save()
+                    VoiceChannelWhitelist(id={ "vc_id" : str(channel_id), "guild_id" : str(ctx.guild.id), "user_id" : user_id}, whitelisters=[str(ctx.author.id)], enabled=False, whitelist=[]).save()
 
                 # Now update the author's whitelist.
                 if user_id in wl_doc.whitelist:
                     print("skip")
                 else:
                     wl_doc.whitelist.append(user_id)
+                    wl_doc.enabled=True
+                    wl_doc.update(set__enabled=wl_doc.enabled)
                     wl_doc.update(set__whitelist=wl_doc.whitelist)
                 print("done.")
             
@@ -194,15 +195,10 @@ class Database:
         })
         return query[0] if len(query) != 0 else None
             
-    def get_all_subbed_users(self, voice_id, guild_id):
+    def get_all_subbed_users(self, voice_id, guild_id, user_id):
         vc_document = self.get_vc_document(voice_id, guild_id)
-        print(vc_document)
-        subbed_users = vc_document.subscribed_users
-        print(subbed_users)
-        members_to_message = []
-        for user in subbed_users:
-            if len(subbed_users[user]['whitelist']) == 0 or subbed_users[user]['whitelist_enabled'] == False:
-                print("Whitelist not enabled.")
-                members_to_message.append(user)
-            else: 
-                wl = subbed_users[user]['whitelist']
+        wl_document = self.get_vc_whitelist_document(voice_id, guild_id, user_id)
+        if vc_document is not None and wl_document is not None:
+            return wl_document.whitelisters
+        else:
+            pass
