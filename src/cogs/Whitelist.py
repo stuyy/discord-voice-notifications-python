@@ -14,22 +14,22 @@ class Whitelist(commands.Cog):
         embed.set_footer(text='To whitelist someone, first subscribe to a channel, and then issue the command: e.g: ?wl add 582319490604335107 @UserToWhitelist#1337')
         embed.description = ''
         whitelist = self.bot.db.get_user_whitelist(ctx)
+        
         for wl in whitelist:
-            vc = discord.utils.find(lambda c: c.id == int(wl), ctx.guild.voice_channels)
+            vc = discord.utils.find(lambda c: c.id == int(wl.id['vc_id']), ctx.guild.voice_channels)
             if vc is not None:
                 print(vc.name)
                 field = ''
-                for member_id in whitelist[wl]:
+                for member_id in wl.whitelist:
                     member = discord.utils.find(lambda m : m.id == int(member_id), ctx.guild.members)
                     if member is not None:
                         field += '{} ({})\n'.format(member.name, member.id)
                 embed.add_field(name=vc.name, value=field, inline=False)
-
+        
         await ctx.channel.send(embed=embed)
     
     @whitelist.command(name='add', aliases=['a'])
     async def whitelist_add(self, ctx, channel, *args):
-        # self.db.add_wl(ctx)
         try:
             voice_channel = discord.utils.find(lambda c: c.id == int(channel), ctx.guild.voice_channels)
             if voice_channel is not None:
