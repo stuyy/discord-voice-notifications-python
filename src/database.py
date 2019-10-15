@@ -76,9 +76,18 @@ class Database:
         else:
             return None'''
 
+    '''
+        This function must return a list of all the voice channel ids the user is subscribed to.
+    '''
     def get_subbed_channels(self, member, guild):
-        pass
+        query = VoiceChannel.objects(id__guild_id=str(guild.id))
+        subbed_channels = []
+        for q in query:
+            print(q.id['vc_id'])
+            if str(member.id) in q.subscribed_users:
+                subbed_channels.append(q.id['vc_id'])
 
+        return subbed_channels
         '''
         member_doc = self.get_member_document(member.id)
         return member_doc.channels[str(guild.id)] if member_doc is not None and str(guild.id) in member_doc.channels else None
