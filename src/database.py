@@ -131,15 +131,42 @@ class Database:
             
         else:
             return False
-
+    '''
+        Remove the users from the author's whitelist property
+        Remove the author from the user's whitelisters property.
+    '''
     def whitelist_remove(self, ctx, channel_id, users):
         is_subbed = self.is_subscribed(str(ctx.author.id), str(channel_id), str(ctx.guild.id))
         if is_subbed == False:
             return False
-        
-        else:
-            pass
 
+        vc_doc = self.get_vc_document(str(channel_id), str(ctx.guild.id))
+        wl_doc = self.get_vc_whitelist_document(channel_id, ctx.guild.id, ctx.author.id)
+
+        if vc_doc is not None and wl_doc is not None:
+            whitelisted_users = wl_doc.whitelist
+            for u in users[str(channel_id)]:
+                print(u)
+                if u in whitelisted_users:  # If user id in whitelist list from DB, remove. 
+                    whitelisted_users.remove(u)
+            # Update the document.
+            wl_doc.update(set__whitelist=whitelisted_users)
+            print('done')
+            
+            # We removed the users from author's whitelist, now we need to iterate through all the users we removed, and remove author from their whitelister list.
+            for u in users[str(channel_id)]:
+                print('Removing ' + u)
+                other = self.get_vc_whitelist_document(channel_id, ctx.guild.id, str(u))
+                if other is not None:
+                    print(other.whitelisters)
+                    if str(ctx.author.id) in other.whitelisters:
+                        other.whitelisters.remove(str(ctx.author.id))
+                        other.update(set__whitelisters=wl_doc.whitelisters)
+                        print('done')
+            print("finished.")
+        else:
+            print('wtf?')
+    
     def is_subscribed(self, user_id, voice_id, guild_id):
         vc_doc = self.get_vc_document(voice_id, guild_id)
         if vc_doc is not None:
