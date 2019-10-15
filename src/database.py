@@ -15,8 +15,10 @@ class Database:
                 VoiceChannel(id=id, subscribed_users={ str(ctx.author.id) : [] }, limited=False, subscribable_users=[]).save()
             else:
                 subbed = vc_doc.subscribed_users
+                print(subbed)
                 if str(ctx.author.id) not in subbed:
-                    subbed.append(str(ctx.author.id))
+                    subbed[(str(ctx.author.id))] = []
+                    vc_doc.update(set__subscribed_users=subbed)
                 else:
                     print("Already exists.")
         '''
@@ -36,7 +38,20 @@ class Database:
                 member_doc.update(set__channels=member_doc.channels)
         '''
     def unsubscribe(self, channels, ctx):
-        member = ctx.author
+        for id in channels[str(ctx.guild.id)]:
+            vc_doc = self.get_vc_document(id)
+            if vc_doc is None:
+                print("Voice Channel Document does not exist.")
+            else:
+                # Check if User is Subscribed.
+                subbed = vc_doc.subscribed_users
+                popped = subbed.pop(str(ctx.author.id), None)
+                if popped is not None:
+                    vc_doc.update(set__subscribed_users=subbed)
+                    return True
+                else:
+                    return None
+        '''member = ctx.author
         guild = ctx.guild
         # Get the member document first.
         member_doc = self.get_member_document(member.id)
@@ -50,7 +65,7 @@ class Database:
             else:
                 return None
         else:
-            return None
+            return None'''
 
     def get_subbed_channels(self, member, guild):
         member_doc = self.get_member_document(member.id)
