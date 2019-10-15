@@ -131,15 +131,21 @@ class Database:
             
         else:
             return False
-            
+
+    def whitelist_remove(self, ctx, channel_id, users):
+        is_subbed = self.is_subscribed(str(ctx.author.id), str(channel_id), str(ctx.guild.id))
+        if is_subbed == False:
+            return False
+        
+        else:
+            pass
+
     def is_subscribed(self, user_id, voice_id, guild_id):
         vc_doc = self.get_vc_document(voice_id, guild_id)
         if vc_doc is not None:
             if user_id in vc_doc.subscribed_users:
-                print("Yes, subscribed.")
                 return True
             else:
-                print("No, not subscribed.")
                 return False
         else: # VoiceChannel document doesn't exist. Means no one has subscribed to it.
             return False
