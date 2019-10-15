@@ -9,6 +9,17 @@ class Database:
         connect(name)
         
     def subscribe(self, channels, ctx):
+        for id in channels[str(ctx.guild.id)]:
+            vc_doc = self.get_vc_document(id)
+            if vc_doc is None:
+                VoiceChannel(id=id, subscribed_users={ str(ctx.author.id) : [] }, limited=False, subscribable_users=[]).save()
+            else:
+                subbed = vc_doc.subscribed_users
+                if str(ctx.author.id) not in subbed:
+                    subbed.append(str(ctx.author.id))
+                else:
+                    print("Already exists.")
+        '''
         member = ctx.author
         query = GuildMember.objects(user_id=str(member.id))
         if len(query) == 0:
@@ -23,7 +34,7 @@ class Database:
             else:
                 member_doc.channels.update(channels)
                 member_doc.update(set__channels=member_doc.channels)
-        
+        '''
     def unsubscribe(self, channels, ctx):
         member = ctx.author
         guild = ctx.guild
@@ -99,4 +110,8 @@ class Database:
             return None
         else:
             return query[0]
+
+    def get_vc_document(self, id):
+        query = VoiceChannel.objects(id=id)
+        return query[0] if len(query) != 0 else None
             
