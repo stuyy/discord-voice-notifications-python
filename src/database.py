@@ -11,13 +11,22 @@ class Database:
     def subscribe(self, channels, ctx):
         for id in channels[str(ctx.guild.id)]:
             vc_doc = self.get_vc_document(id)
+            user_id = str(ctx.author.id)
+            user = {
+                user_id : {
+                    "whitelist": [],
+                    "whitelist_enabled": False
+                }
+            }
             if vc_doc is None:
-                VoiceChannel(id=id, subscribed_users={ str(ctx.author.id) : [] }, limited=False, subscribable_users=[]).save()
+                VoiceChannel(id=id, subscribed_users=user, limited=False, subscribable_users=[]).save()
             else:
                 subbed = vc_doc.subscribed_users
-                print(subbed)
                 if str(ctx.author.id) not in subbed:
-                    subbed[(str(ctx.author.id))] = []
+                    subbed[(str(ctx.author.id))] = {
+                        "whitelist" : [],
+                        "whitelist_enabled" : False
+                    }
                     vc_doc.update(set__subscribed_users=subbed)
                 else:
                     print("Already exists.")
