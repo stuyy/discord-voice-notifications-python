@@ -20,11 +20,10 @@ class Subscribe(commands.Cog):
         if len(valid_voice_channels[str(guild.id)]) == 0:
             pass
         else:
-            result = self.bot.db.unsubscribe(valid_voice_channels, ctx)
-            if result:
-                print('Success!')
-            else:
-                print("nope")
+            self.bot.db.unsubscribe(valid_voice_channels, ctx)
+            embed.description = 'done.'
+            await ctx.channel.send(embed=embed)
+    
     @commands.command(aliases=['subbed'])
     async def subscribed(self, ctx):
         guild = ctx.guild

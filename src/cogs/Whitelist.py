@@ -14,28 +14,33 @@ class Whitelist(commands.Cog):
         embed.set_footer(text='To whitelist someone, first subscribe to a channel, and then issue the command: e.g: ?wl add 582319490604335107 @UserToWhitelist#1337')
         embed.description = ''
         whitelist = self.bot.db.get_user_whitelist(ctx)
-        
         for wl in whitelist:
             vc = discord.utils.find(lambda c: c.id == int(wl.id['vc_id']), ctx.guild.voice_channels)
             if vc is not None:
-                print(vc.name)
                 field = ''
                 for member_id in wl.whitelist:
                     member = discord.utils.find(lambda m : m.id == int(member_id), ctx.guild.members)
                     if member is not None:
                         field += '{} ({})\n'.format(member.name, member.id)
+                print(field)
+                if len(field) == 0:
+                    field = '\u200b'
                 embed.add_field(name=vc.name, value=field, inline=False)
-        
+        print(embed.fields)
         await ctx.channel.send(embed=embed)
     
     @whitelist.command(name='add', aliases=['a'])
     async def whitelist_add(self, ctx, channel, *args):
+        embed = discord.Embed()
         try:
             voice_channel = discord.utils.find(lambda c: c.id == int(channel), ctx.guild.voice_channels)
             if voice_channel is not None:
                 whitelist = self.parse_users(ctx, voice_channel, args)
                 if whitelist is not None:
-                    self.bot.db.whitelist_add(ctx, voice_channel.id, whitelist)
+                    flag = self.bot.db.whitelist_add(ctx, voice_channel.id, whitelist)
+                    if flag == False:
+                        embed.description='You are not subscribed to ' + voice_channel.name
+                        await ctx.channel.send(embed=embed)
             else:
                 print('no voice channel found')
 
@@ -44,14 +49,34 @@ class Whitelist(commands.Cog):
             if voice_channel is not None:
                 whitelist = self.parse_users(ctx, voice_channel, args)
                 if whitelist is not None:
-                    self.bot.db.whitelist_add(ctx, voice_channel.id, whitelist)
+                    flag = self.bot.db.whitelist_add(ctx, voice_channel.id, whitelist)
+                    if flag == False:
+                        embed.description='You are not subscribed to ' + voice_channel.name
+                        await ctx.channel.send(embed=embed)
             else:
-                print('no voice channel foundd')
+                print('no voice channel found')
 
 
     @whitelist.command(name='remove', aliases=['r', 'rm'])
-    async def whitelist_remove(self, ctx):
-        print('remove')
+    async def whitelist_remove(self, ctx, channel, *args):
+        embed = discord.Embed()
+        try:
+            voice_channel = discord.utils.find(lambda c: c.id == int(channel), ctx.guild.voice_channels)
+            if voice_channel is not None:
+                whitelist = self.parse_users(ctx, voice_channel, args)
+                if whitelist is not None:
+                    flag = self.bot.db.whitelist_remove(ctx, voice_channel.id, whitelist)
+            else:
+                print('no voice channel found')
+
+        except Exception as error:
+            voice_channel = discord.utils.find(lambda c : c.name == channel, ctx.guild.voice_channels)
+            if voice_channel is not None:
+                whitelist = self.parse_users(ctx, voice_channel, args)
+                if whitelist is not None:
+                    flag = self.bot.db.whitelist_remove(ctx, voice_channel.id, whitelist)
+            else:
+                print('no voice channel foundd')
     
     @commands.command(name='clearwl')
     async def clear_wl(self, ctx):

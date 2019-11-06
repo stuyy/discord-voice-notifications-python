@@ -49,8 +49,6 @@ class Database:
                 popped = subbed.pop(str(ctx.author.id), None)
                 if popped is not None:
                     vc_doc.update(set__subscribed_users=subbed)
-                    
-
     '''
         This function must return a list of all the voice channel ids the user is subscribed to.
     '''
@@ -166,7 +164,7 @@ class Database:
             print("finished.")
         else:
             print('wtf?')
-    
+
     def is_subscribed(self, user_id, voice_id, guild_id):
         vc_doc = self.get_vc_document(voice_id, guild_id)
         if vc_doc is not None:

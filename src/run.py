@@ -21,5 +21,4 @@ if __name__ == '__main__':
         print("DEV MODE")
     elif os.getenv("MODE") == "PROD":
         load_dotenv()
-
-client.run(os.getenv("TOKEN"))
+    client.run(os.getenv("TOKEN"))
