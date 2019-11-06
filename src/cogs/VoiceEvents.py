@@ -16,15 +16,30 @@ class VoiceEvents(commands.Cog):
             # If user is whitelisted, send DM.
             # Set a flag called is_notified to indicate user was notified, prevent spam.
             whitelisters = self.bot.db.get_all_subbed_users(str(after.channel.id), str(member.guild.id), str(member.id))
-            
+            # Does not work if user doesnt have whitelist. Need to check the user's whitelist first.
             for id in whitelisters:
                 user = utils.find(lambda u : u.id == int(id), member.guild.members)
                 if user is not None:
                     await user.send('{} has joined {}'.format(member.name, after.channel.name))
         elif before.channel is not None and after.channel is not None:
             print("{} switched from {} to {}".format(member.name, before.channel.name, after.channel.name))
+            whitelisters = self.bot.db.get_all_subbed_users(str(after.channel.id), str(member.guild.id), str(member.id))
+            
+            for id in whitelisters:
+                user = utils.find(lambda u : u.id == int(id), member.guild.members)
+                if user is not None:
+                    await user.send('{} has switched to {} from {}'.format(member.name, after.channel.name, before.channel.name))
         elif before.channel is not None and after.channel is None:
             print("{} left {}".format(member.name, before.channel.name))
+            whitelisters = self.bot.db.get_all_subbed_users(str(before.channel.id), str(member.guild.id), str(member.id))
+            for id in whitelisters:
+                user = utils.find(lambda u : u.id == int(id), member.guild.members)
+                if user is not None:
+                    await user.send('{} has left {}'.format(member.name, before.channel.name))
 
+
+        
+
+        
 def setup(bot):
     bot.add_cog(VoiceEvents(bot))
